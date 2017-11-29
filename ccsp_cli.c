@@ -5,6 +5,8 @@
 #include <netdb.h>
 #include <string.h>
 
+void dochat(int sockfd, struct sockaddr_in serv_addr);
+
 void error(char *msg)
 {
 	perror(msg);
@@ -13,12 +15,11 @@ void error(char *msg)
 
 int main(int argc, char const *argv[])
 {
-	int sockfd, portno, n;
+	int sockfd, portno;
 
 	struct sockaddr_in serv_addr;
 	struct hostent *server;
 
-	char buffer[256];
 	if (argc < 3)
 	{
 		fprintf(stderr, "usage %s hostname port\n", argv[0]);
@@ -44,6 +45,16 @@ int main(int argc, char const *argv[])
 	bcopy((char *) server->h_addr, (char *) &serv_addr.sin_addr.s_addr, server->h_length);
 	serv_addr.sin_port = htons(portno);
 
+	dochat(sockfd, serv_addr);
+
+	return 0;
+}
+
+void dochat(int sockfd, struct sockaddr_in serv_addr)
+{
+	char buffer[256];
+	int n;
+
 	if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
 	{
 		error("ERROR ! Connecting ");
@@ -68,5 +79,6 @@ int main(int argc, char const *argv[])
 
 	printf("%s\n", buffer);
 
-	return 0;
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	dochat(sockfd, serv_addr);
 }
